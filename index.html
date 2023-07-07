@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixel Creation Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        // Constants
+        const PIXEL_SIZE = 40;
+        const GRID_SIZE = 10;
+        const FADE_DURATION = 500; // Animation duration in milliseconds
+
+        // Game state
+        let grid = [];
+
+        // Initialize the grid
+        function initializeGrid() {
+            for (let row = 0; row < GRID_SIZE; row++) {
+                grid[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    grid[row][col] = 0; // Initially, no pixels are created
+                }
+            }
+        }
+
+        // Create a new pixel and update the temporary grid
+        function createNewPixels(tempGrid, row, col) {
+            tempGrid[row][col] = 1;
+
+            // Create neighboring pixels in a plus shape
+            if (row > 0) tempGrid[row - 1][col] = 1; // Above
+            if (row < GRID_SIZE - 1) tempGrid[row + 1][col] = 1; // Below
+            if (col > 0) tempGrid[row][col - 1] = 1; // Left
+            if (col < GRID_SIZE - 1) tempGrid[row][col + 1] = 1; // Right
+        }
+
+        // Perform the multiplication animation
+        function animateMultiplication(row, col) {
+            const tempGrid = [];
+
+            // Initialize the temporary grid
+            for (let r = 0; r < GRID_SIZE; r++) {
+                tempGrid[r] = [];
+                for (let c = 0; c < GRID_SIZE; c++) {
+                    tempGrid[r][c] = 0;
+                }
+            }
+
+            // Create new pixels in the temporary grid
+            createNewPixels(tempGrid, row, col);
+
+            // Update the grid and animate the multiplication effect
+            const start = Date.now();
+            const intervalId = setInterval(() => {
+                const elapsed = Date.now() - start;
+                const progress = elapsed / FADE_DURATION;
+
+                for (let r = 0; r < GRID_SIZE; r++) {
+                    for (let c = 0; c < GRID_SIZE; c++) {
+                        if (tempGrid[r][c] === 1) {
+                            if (grid[r][c] < progress) {
+                                grid[r][c] = progress;
+                            }
+                        }
+                    }
+                }
+
+                drawGrid();
+
+                if (elapsed >= FADE_DURATION) {
+                    clearInterval(intervalId);
+                    createPixel(row, col);
+                }
+            }, 16);
+        }
+
+        // Create a new pixel and update the grid
+        function createPixel(row, col) {
+            grid[row][col] = 1;
+        }
+
+        // Draw the grid on the canvas
+        function drawGrid() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * PIXEL_SIZE;
+                    const y = row * PIXEL_SIZE;
+
+                    const alpha = Math.min(grid[row][col], 1);
+                    ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                    ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+                }
+            }
+        }
+
+        // Handle mouse click event
+        function handleClick(event) {
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const col = Math.floor(mouseX / PIXEL_SIZE);
+            const row = Math.floor(mouseY / PIXEL_SIZE);
+
+            animateMultiplication(row, col);
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            initializeGrid();
+            drawGrid();
+
+            const canvas = document.getElementById('gameCanvas');
+            canvas.addEventListener('click', handleClick);
+        }
+
+        // Start the game
+        initializeGame();
+    </script>
+</body>
+</html>
