@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pixel Creation Game</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        // Constants
+        const PIXEL_SIZE = 40;
+        const GRID_SIZE = 10;
+
+        // Game state
+        let grid = [];
+
+        // Initialize the grid
+        function initializeGrid() {
+            for (let row = 0; row < GRID_SIZE; row++) {
+                grid[row] = [];
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    grid[row][col] = false; // Initially, no pixels are created
+                }
+            }
+        }
+
+        // Create a new pixel and update the grid
+        function createPixel(row, col) {
+            grid[row][col] = true;
+        }
+
+        // Draw the grid on the canvas
+        function drawGrid() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * PIXEL_SIZE;
+                    const y = row * PIXEL_SIZE;
+
+                    if (grid[row][col]) {
+                        ctx.fillStyle = 'black';
+                        ctx.fillRect(x, y, PIXEL_SIZE, PIXEL_SIZE);
+                    }
+                }
+            }
+        }
+
+        // Handle mouse click event
+        function handleClick(event) {
+            const canvas = document.getElementById('gameCanvas');
+            const rect = canvas.getBoundingClientRect();
+
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const col = Math.floor(mouseX / PIXEL_SIZE);
+            const row = Math.floor(mouseY / PIXEL_SIZE);
+
+            createPixel(row, col);
+            drawGrid();
+
+            // Check if all pixels are black
+            if (checkAllPixelsBlack()) {
+                // Display the image after a short delay
+                setTimeout(displayImage, 1000);
+            }
+        }
+
+        // Check if all pixels are black
+        function checkAllPixelsBlack() {
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    if (!grid[row][col]) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Display the image on the canvas
+        function displayImage() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const image = new Image();
+            image.src = 'waltuh.png'; // Replace with the path to your image
+
+            image.onload = function () {
+                const x = (canvas.width - image.width) / 2;
+                const y = (canvas.height - image.height) / 2;
+                ctx.drawImage(image, x, y);
+            };
+        }
+
+        // Initialize the game
+        function initializeGame() {
+            initializeGrid();
+            drawGrid();
+
+            const canvas = document.getElementById('gameCanvas');
+            canvas.addEventListener('click', handleClick);
+        }
+
+        // Start the game
+        initializeGame();
+    </script>
+</body>
+</html>
